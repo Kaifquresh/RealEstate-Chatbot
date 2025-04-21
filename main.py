@@ -1,38 +1,48 @@
 import streamlit as st
-from rag import generate_answer,process_urls
+from rag import generate_answer, process_urls
 
-st.title("Real Estate Research Tool")
+# Page config
+st.set_page_config(page_title="Smart URL Bot", page_icon="🤖", layout="centered")
 
-url1= st.sidebar.text_input('URL 1')
-url2= st.sidebar.text_input('URL 2')
-url3= st.sidebar.text_input('URL 3')
+# Title
+st.markdown("<h1 style='text-align: center; color: #4B8BBE;'>🤖 Smart URL Bot</h1>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center; color: grey;'>Ask questions based on content from your favorite URLs</p>", unsafe_allow_html=True)
+st.markdown("---")
 
-placeholder = st.empty()
+# Sidebar
+st.sidebar.header("🔗 Enter URLs to Process")
+url1 = st.sidebar.text_input('🔗 URL 1')
+url2 = st.sidebar.text_input('🔗 URL 2')
+url3 = st.sidebar.text_input('🔗 URL 3')
 
-process_url_button = st.sidebar.button('Process URLs')
-if process_url_button:
-    urls=[url for url in (url1,url2,url3) if url!='']
-    if len(urls)==0:
-        placeholder.text("You must provide at least one valid url")
-        # st.write("Data processed successfully")
+# Process Button
+if st.sidebar.button('🚀 Process URLs'):
+    urls = [url for url in (url1, url2, url3) if url.strip()]
+    if not urls:
+        st.warning("⚠️ Please enter at least one valid URL.")
     else:
-        for status in process_urls(urls):
-            placeholder.text(status)
+        with st.spinner("Processing URLs..."):
+            for status in process_urls(urls):
+                st.success(status)
+        st.balloons()
 
-# Give a trial run once you complete till here
+# Divider
+st.markdown("---")
 
-query= placeholder.text_input("Question")
+# Question input
+st.markdown("### ❓ Ask a Question")
+query = st.text_input("Type your question here...", placeholder="e.g., What is the main idea of the article?")
 
+# Display answer
 if query:
     try:
-        answer,sources= generate_answer(query)
-        st.header("Answer")
-        st.write(answer)
+        answer, sources = generate_answer(query)
+        st.markdown("### ✅ Answer")
+        st.success(answer)
 
         if sources:
-            st.subheader("Sources:")
+            st.markdown("### 🔍 Sources")
             for source in sources.split("\n"):
-                st.write(source)
-
-    except RuntimeError as e:
-        placeholder.text("You must process the urls first")
+                st.markdown(f"- {source}")
+    except RuntimeError:
+        st.error("⚠️ Please process the URLs before asking a question.")
